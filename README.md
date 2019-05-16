@@ -1,6 +1,7 @@
 # A hyper-simple zero-pressure typing game/trainer
 This was written a year ago as a personal project and is very likely to not represent my programming style today
 <hr/>
+
 ### Features:
 - Colour-codes characters for their current state
   - `Green` for untyped, `Dark green` for correct, `Red` for incorrect character and `White` for incorrect space.
