@@ -21,7 +21,9 @@ This was written a year ago as a personal project and is very likely to not repr
 ### Images:
 
 File selection:
+
 ![](https://i.imgur.com/VxjaBwb.png)
 
 Typing:
+
 ![](https://i.imgur.com/uiENvw8.png)
