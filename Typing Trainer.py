@@ -9,23 +9,23 @@ class Colours:
 def start_game(word_list):
     # constructs the word buffer to avoid lag on large files
     word_buffer = build_buffer(word_list)
-    retry_list = set()
+    retry_list = set() # TODO: Add retry words mode
     clear()
     # loops every time the user types the word correctly
     while(True): # -- Word Loop
         user_word = ''
         added_to_retry = False
-        if len(word_buffer) <= 0:
-            word_buffer = build_buffer(word_list)
-        # clears user word every time they complete a word
+        # if len(word_buffer) <= 0:
+        word_buffer = iterate_buffer(word_list, word_buffer)
         # loops every time the user enters a keystroke.
+        # clears user word every time they complete a word
         while(True): # -- Character Loop
             sys.stdout.write('\r')
-            for i in range(0, 10):
+            for i in range(0, word_queue_count):
                 if i >= len(word_buffer):
                     break
                 sys.stdout.write(word_buffer[i] + ' ')
-            sys.stdout.write(' ' * 10)
+            sys.stdout.write(' ' * word_queue_count)
             sys.stdout.flush()
             sys.stdout.write('\r')
 
@@ -87,6 +87,14 @@ def read_words_from_file(in_file):
         valid_words = set(word_file.read().split())
     return valid_words
 
+def iterate_buffer(word_list, word_buffer):
+    while True:
+        word = random.choice(tuple(word_list))
+        if word_buffer[len(word_buffer) - 1] != word:
+            break
+    word_buffer.append(word)
+    return word_buffer
+
 def build_buffer(word_list):
     # word buffer is empty list
     word_buffer = list()
@@ -102,7 +110,9 @@ def build_buffer(word_list):
 
 if __name__ == '__main__':
     # cfg
-    word_buffer_size = 50
+    # NOTE: I'm referring to these variables in a function outside of this code block... idrk why that even works let alone if it's proper
+    word_buffer_size = 10
+    word_queue_count = 10
 
     right_hand = set('6yhn7ujm8ik,9ol.0p;/-[\'=]')
     right_hand_words = set()
