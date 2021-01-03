@@ -6,9 +6,52 @@ class Colours:
     green = '\33[32m'
     white = '\33[37m'
 
+# Convenience function
+def clear():
+    os.system('cls')
+
+def list_files():
+    # prints files in a numbered selection list and returns the file paths
+    # (From what I can tell. It's been a while.)
+    os.chdir(".")
+    for index, file in enumerate(glob.glob("texts\\*.txt")):
+        print('[' + str(index) + ']', file)
+    return glob.glob("texts\\*.txt")
+
+# Reads a file into memory
+def read_words_from_file(in_file):
+    print('Loading', in_file + '...')
+    with open(in_file) as word_file:
+        valid_words = set(word_file.read().split())
+    return valid_words
+
+# Adds a single word, which is unique to the previous word, to the queue
+def iterate_queue(word_list, word_buffer):
+    while True:
+        word = random.choice(tuple(word_list))
+        if word_buffer[len(word_buffer) - 1] != word:
+            break
+    word_buffer.append(word)
+    return word_buffer
+
+# Generates a full queue
+def build_queue(word_list):
+    # word buffer is empty list
+    word_buffer = list()
+    # get 'word_buffer_size' amount of words randomly from the main list of words
+    if len(word_list) < word_buffer_size:
+        amt = len(word_list)
+    else:
+        amt = word_buffer_size
+    for x in range(0, amt):
+        print('\rBuffering words... ' + str(x) + '/' + str(word_buffer_size), end='')
+        word_buffer.append(random.choice(tuple(word_list)))
+    return word_buffer
+
+# Game loop
 def start_game(word_list):
     # constructs the word buffer to avoid lag on large files
-    word_buffer = build_buffer(word_list)
+    word_buffer = build_queue(word_list)
     retry_list = set() # TODO: Add retry words mode
     clear()
     # loops every time the user types the word correctly
@@ -16,7 +59,7 @@ def start_game(word_list):
         user_word = ''
         added_to_retry = False
         # if len(word_buffer) <= 0:
-        word_buffer = iterate_buffer(word_list, word_buffer)
+        word_buffer = iterate_queue(word_list, word_buffer)
         # loops every time the user enters a keystroke.
         # clears user word every time they complete a word
         while(True): # -- Character Loop
@@ -70,50 +113,15 @@ def start_game(word_list):
                 word_buffer.pop(0)
                 break
 
-def clear():
-    os.system('cls')
-
-def list_files():
-    # prints files in a numbered selection list and returns the file paths
-    # (From what I can tell. It's been a while.)
-    os.chdir(".")
-    for index, file in enumerate(glob.glob("texts\\*.txt")):
-        print('[' + str(index) + ']', file)
-    return glob.glob("texts\\*.txt")
-
-def read_words_from_file(in_file):
-    print('Loading', in_file + '...')
-    with open(in_file) as word_file:
-        valid_words = set(word_file.read().split())
-    return valid_words
-
-def iterate_buffer(word_list, word_buffer):
-    while True:
-        word = random.choice(tuple(word_list))
-        if word_buffer[len(word_buffer) - 1] != word:
-            break
-    word_buffer.append(word)
-    return word_buffer
-
-def build_buffer(word_list):
-    # word buffer is empty list
-    word_buffer = list()
-    # get 'word_buffer_size' amount of words randomly from the main list of words
-    if len(word_list) < word_buffer_size:
-        amt = len(word_list)
-    else:
-        amt = word_buffer_size
-    for x in range(0, amt):
-        print('\rBuffering words... ' + str(x) + '/' + str(word_buffer_size), end='')
-        word_buffer.append(random.choice(tuple(word_list)))
-    return word_buffer
-
+# ENTRY POINT - Set up the game
 if __name__ == '__main__':
     # cfg
     # NOTE: I'm referring to these variables in a function outside of this code block... idrk why that even works let alone if it's proper
+    # Define game parameters
     word_buffer_size = 10
     word_queue_count = 10
 
+    # Define which keys are for which hand
     right_hand = set('6yhn7ujm8ik,9ol.0p;/-[\'=]')
     right_hand_words = set()
     left_hand = set('1qaz2wsx3edc4rfv5tgb')
@@ -154,7 +162,6 @@ if __name__ == '__main__':
                 # and just counts the file in general for consistency's stake
                 both_hand_count += 1
                 both_hand_words.add(x)
-
 
     print('Complete...')
     print()
