@@ -26,72 +26,65 @@ def read_words_from_file(in_file):
     return valid_words
 
 # Adds a single word, which is unique to the previous word, to the queue
-def iterate_queue(word_list, word_buffer):
-    while True:
-        word = random.choice(tuple(word_list))
-        if word_buffer[len(word_buffer) - 1] != word:
-            break
-    word_buffer.append(word)
-    return word_buffer
+def iterate_queue(word_list, word_queue):
+    word_queue = build_queue(word_list)
+    return word_queue
 
 # Generates a full queue
 def build_queue(word_list):
     # word buffer is empty list
-    word_buffer = list()
+    word_queue = ''
+    prev_word = ''
     # get 'word_buffer_size' amount of words randomly from the main list of words
     if len(word_list) < word_buffer_size:
         amt = len(word_list)
     else:
         amt = word_buffer_size
     for x in range(0, amt):
-        print('\rBuffering words... ' + str(x) + '/' + str(word_buffer_size), end='')
-        word_buffer.append(random.choice(tuple(word_list)))
-    return word_buffer
+        print('\rBuilding word queue... ' + str(x) + '/' + str(word_buffer_size), end='')
+        while True:
+            word = random.choice(tuple(word_list))
+            if word != prev_word:
+                word_queue += word + ' '
+                break
+    return word_queue
 
 # Game loop
 def start_game(word_list):
     # constructs the word buffer to avoid lag on large files
-    word_buffer = build_queue(word_list)
-    retry_list = set() # TODO: Add retry words mode
+    word_queue = build_queue(word_list)
     clear()
-    # loops every time the user types the word correctly
+    # loops every time the user types the queue correctly
     while(True): # -- Word Loop
-        user_word = ''
-        added_to_retry = False
+        typed_chars = ''
         # if len(word_buffer) <= 0:
-        word_buffer = iterate_queue(word_list, word_buffer)
+        word_queue = iterate_queue(word_list, word_queue)
         # loops every time the user enters a keystroke.
-        # clears user word every time they complete a word
+        # clears user word every time they complete a queue
         while(True): # -- Character Loop
+            # Print the word queue
             sys.stdout.write('\r')
-            for i in range(0, word_queue_count):
-                if i >= len(word_buffer):
-                    break
-                sys.stdout.write(word_buffer[i] + ' ')
-            sys.stdout.write(' ' * word_queue_count)
+            sys.stdout.write(word_queue + ' ')
             sys.stdout.flush()
             sys.stdout.write('\r')
 
 
-# --        # loops through the target word and checks if the user's word matches up,-
+# --        # loops through the displayed characters and checks if the user's characters match up,-
             # -printing correct chars as green and incorrect as red, and white for spaces where they shouldn't be-
-            # -over the top of the previously printed word buffer.
-            for i, x in enumerate(user_word):
-                # 'try' for handling if the user's word is longer than the word they're trying to type
+            # -over the top of the previously printed word queue.
+            for i, x in enumerate(typed_chars):
+                # 'try' for handling if the user's string is longer than the queue they're trying to type
                 try:
                     # letter is correct
-                    if x == word_buffer[0][i]:
+                    if x == word_queue[i]:
                         sys.stdout.write(Colours.green + x + Colours.reset)
                     # or not correct
                     else:
-                        if not added_to_retry:
-                            retry_list.add(word_buffer[0])
-                            added_to_retry = True
                         if x == ' ':
-                            sys.stdout.write(Colours.white + word_buffer[0][i] + Colours.reset)
+                            sys.stdout.write(Colours.white + word_queue[i] + Colours.reset)
                         else:
                             sys.stdout.write(Colours.red + x + Colours.reset)
-                # if it's longer than the actual word, then it's incorrect no matter what
+                # if it's longer than the actual queue, then it's incorrect no matter what
                 except:
                     sys.stdout.write(Colours.red + x + Colours.reset)
             sys.stdout.flush()
@@ -102,20 +95,23 @@ def start_game(word_list):
             # if it's a letter or number
             if user_input.isalnum() or user_input == ' ':
                 # add it to their word
-                user_word = user_word + user_input
+                typed_chars = typed_chars + user_input
             else:
                 # or if it is a backspace
                 if user_input == '\x08':
                     # remove one character from their word
-                    user_word = user_word[:-1]
-            # if the user's word is correct and ends with a space, remove the word and continue to the next one
-            if user_word.lower() == (word_buffer[0]+' '):
-                word_buffer.pop(0)
-                break
+                    typed_chars = typed_chars[:-1]
+                # or if it is an enter keystroke
+                if user_input == '\r':
+                    # if the user's queue is correct and ends with a space, add a line break and generate a new queue
+                    sys.stdout.write('\n')
+                    word_queue = build_queue(word_list)
+                    break
+                    
 
 # ENTRY POINT - Set up the game
 if __name__ == '__main__':
-    # cfg
+    # BEGIN CFG
     # NOTE: I'm referring to these variables in a function outside of this code block... idrk why that even works let alone if it's proper
     # Define game parameters
     word_buffer_size = 10
@@ -126,7 +122,7 @@ if __name__ == '__main__':
     right_hand_words = set()
     left_hand = set('1qaz2wsx3edc4rfv5tgb')
     left_hand_words = set()
-    # end cfg
+    # END CFG
 
     # prints and returns the file list matching .txt
     file_list = list_files()
@@ -145,12 +141,12 @@ if __name__ == '__main__':
     # gets words from file
     user_input = int(input('>>'))
     word_list_file = file_list[user_input]
-    english_words = read_words_from_file(word_list_file)
-    both_hand_words = english_words
+    all_words = read_words_from_file(word_list_file)
+    both_hand_words = all_words
 
 
     # sorts the file into words that can be typed by the left hand or right hand.
-    for x in english_words:
+    for x in all_words:
         if set(x).issubset(left_hand):
             left_hand_count += 1
             left_hand_words.add(x)
