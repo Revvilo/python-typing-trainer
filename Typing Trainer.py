@@ -13,7 +13,7 @@ def clear():
 def list_files():
     # prints files in a numbered selection list and returns the file paths
     # (From what I can tell. It's been a while.)
-    os.chdir(".")
+    os.chdir(os.path.dirname(__file__))
     for index, file in enumerate(glob.glob("texts\\*.txt")):
         print('[' + str(index) + ']', file)
     return glob.glob("texts\\*.txt")
@@ -167,6 +167,7 @@ if __name__ == '__main__':
     print('- Both hands:', len(both_hand_words))
     print()
     print('Close the window at any time to exit - WIP: Command to return to word selection or exit')
+    print('If you hit any of the arrow keys while playing the program will just crash, so that\'s one way of doing it.')
     print()
 
     print('Do you want [L]eft [R]ight or [B]oth handed word practice?')
