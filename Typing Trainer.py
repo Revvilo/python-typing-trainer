@@ -1,5 +1,4 @@
 import random, os, glob, msvcrt, re, sys
-
 class Colours:
     red = '\33[31m'
     reset = '\33[0m'
@@ -40,10 +39,11 @@ def build_queue(word_list):
         amt = len(word_list)
     else:
         amt = word_buffer_size
+    word_list_tuple = tuple(word_list)
     for x in range(0, amt):
         print('\rBuilding word queue... ' + str(x) + '/' + str(word_buffer_size), end='')
         while True:
-            word = random.choice(tuple(word_list))
+            word = random.choice(word_list_tuple)
             if word != prev_word:
                 word_queue += word + ' '
                 break
