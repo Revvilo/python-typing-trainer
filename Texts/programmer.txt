@@ -33,3 +33,4 @@ while(True)
 while(true)
 if(True)
 if(true)
+switch
