@@ -1,4 +1,28 @@
-import random, os, glob, msvcrt, re, sys
+import random, os, glob, re, sys
+print(sys.platform[:3])
+if sys.platform[:3] == 'win':
+    import msvcrt
+    def getKey():
+        return msvcrt.getch()
+elif sys.platform[:3] == 'lin':
+    import termios, sys, os
+    TERMIOS = termios
+    def getKey():
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        new = termios.tcgetattr(fd)
+        new[3] = new[3] & ~TERMIOS.ICANON & ~TERMIOS.ECHO
+        new[6][TERMIOS.VMIN] = 1
+        new[6][TERMIOS.VTIME] = 0
+        termios.tcsetattr(fd, TERMIOS.TCSANOW, new)
+        c = None
+        try:
+            c = os.read(fd, 1)
+        finally:
+            termios.tcsetattr(fd, TERMIOS.TCSAFLUSH, old)
+        return c
+
+
 class Colours:
     red = '\33[31m'
     reset = '\33[0m'
@@ -17,15 +41,17 @@ class Config():
 
 # Convenience function
 def clear():
-    os.system('cls')
+    if sys.platform[:3] == 'win':
+        os.system('cls')
+    elif sys.platform[:3] == 'lin':
+        os.system("clear")
 
 def list_files():
     # prints files in a numbered selection list and returns the file paths
     # (From what I can tell. It's been a while.)
-    os.chdir(os.path.dirname(__file__))
-    for index, file in enumerate(glob.glob("texts\\*.txt")):
+    for index, file in enumerate(glob.glob("Texts/*.txt")):
         print('[' + str(index) + ']', file)
-    return glob.glob("texts\\*.txt")
+    return glob.glob("Texts/*.txt") # TODO: This double string thing sucks
 
 # Reads a file into memory
 def read_words_from_file(in_file):
@@ -34,7 +60,7 @@ def read_words_from_file(in_file):
         valid_words = set(word_file.read().split())
     return valid_words
 
-# Adds a single word, which is unique to the previous word, to the queue
+# Rebuilds the queue
 def iterate_queue(word_list, word_queue, capitalise):
     word_queue = build_queue(word_list, capitalise)
     return word_queue
@@ -210,14 +236,14 @@ def start_game(word_list, capitalise):
 
 
 # --        # GET NEXT CHARACTER INPUT
-            user_input = msvcrt.getch().decode("utf-8")
+            user_input = getKey().decode("utf-8")
             # if it's a letter or number
             if Config.all_characters.__contains__(user_input.lower()) or user_input == ' ':
                 # add it to their word
                 typed_chars = typed_chars + user_input
             else:
                 # or if it is a backspace
-                if user_input == '\x08':
+                if user_input == '\x08' or user_input == '\x7f':
                     # remove one character from their word
                     typed_chars = typed_chars[:-1]
                 # or if it's escape
@@ -226,7 +252,7 @@ def start_game(word_list, capitalise):
                     restart_game = True
                     break
                 # or if it is an enter keystroke
-                if user_input == '\r':
+                if user_input == '\r' or user_input == '\n':
                     # if the user's queue is correct and ends with a space, add a line break and generate a new queue
                     sys.stdout.write('\n')
                     word_queue = build_queue(word_list, capitalise)
